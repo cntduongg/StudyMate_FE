@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import LogoImg from '../accesory/picture/StudyMate 1.png'
 
 const NavItem: React.FC<{ children: React.ReactNode; href?: string }> = ({
@@ -145,6 +146,7 @@ const PricingCard: React.FC<{
 }
 
 const Membership: React.FC = () => {
+  const { isAuthenticated, user, logout } = useAuth()
   return (
     <div className="min-h-screen bg-white">
       {/* Top nav - Reused from Home */}
@@ -190,18 +192,44 @@ const Membership: React.FC = () => {
                 <span className="text-sm">♛</span>
                 Upgrade
               </Link>
-              <Link
-                to="/login"
-                className="text-sm font-semibold text-slate-700 hover:text-slate-900"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/register"
-                className="rounded-md bg-[#1976d2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#145ca5] transition-colors"
-              >
-                Get Started
-              </Link>
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3">
+                  <div className="hidden md:flex flex-col items-end mr-2">
+                    <span className="text-sm font-semibold text-slate-900">
+                      {user?.fullName || 'User'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 capitalize">
+                      {user?.role || 'Student'}
+                    </span>
+                  </div>
+                  <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer hover:bg-[#1565c0] transition-colors">
+                    <span className="font-semibold text-xs">
+                      {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <i className="fa-solid fa-user"></i>}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => logout()}
+                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-sm font-semibold text-slate-700 hover:text-slate-900"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="rounded-md bg-[#1976d2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#145ca5] transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

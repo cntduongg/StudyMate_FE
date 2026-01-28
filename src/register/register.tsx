@@ -12,6 +12,7 @@ const Register: React.FC = () => {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showToast, setShowToast] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -43,8 +44,10 @@ const Register: React.FC = () => {
       // Registration successful
       const data = await response.json()
       console.log('Registration success:', data)
-      alert('Registration successful! Please sign in.')
-      navigate('/login')
+      setShowToast(true)
+      setTimeout(() => {
+        navigate('/login')
+      }, 2000)
     } catch (err) {
       console.error('Registration error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -54,7 +57,29 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f5f5f5] flex flex-col items-center justify-center px-4 relative">
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-5 right-5 z-50 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-xl border-l-4 border-green-500 animate-[slideIn_0.5s_ease-out]">
+          <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
+            <svg
+              className="w-5 h-5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
+            </svg>
+            <span className="sr-only">Check icon</span>
+          </div>
+          <div className="ml-3 text-sm font-normal text-gray-900">
+            <div className="font-semibold text-green-600">Success!</div>
+            <div className="text-xs">Account created successfully. Redirecting...</div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-10 flex flex-col items-center space-y-3">
         {/* Brand logo image */}
         <div className="flex items-center justify-center">
@@ -197,4 +222,3 @@ const Register: React.FC = () => {
 }
 
 export default Register
-
