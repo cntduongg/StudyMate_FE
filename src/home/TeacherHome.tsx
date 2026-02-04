@@ -112,6 +112,36 @@ const QuickAction: React.FC<{
 
 const TeacherHome: React.FC = () => {
   const { user, logout } = useAuth()
+  const [courses, setCourses] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        const response = await fetch('https://localhost:7259/api/Course/my-courses', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (result && result.data) {
+            setCourses(result.data)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch courses:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
@@ -213,7 +243,7 @@ const TeacherHome: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard 
             label="Total Courses" 
-            value="12" 
+            value={courses.length.toString()} 
             icon={<i className="fa-solid fa-book-open"></i>} 
             color="text-blue-600"
           />
@@ -248,34 +278,27 @@ const TeacherHome: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <CourseCard 
-                title="Advanced React Patterns" 
-                students={156} 
-                earnings="$5,780" 
-                rating={4.9} 
-                status="Published" 
-              />
-              <CourseCard 
-                title="TypeScript Fundamentals" 
-                students={89} 
-                earnings="$2,340" 
-                rating={4.8} 
-                status="Published" 
-              />
-              <CourseCard 
-                title="Node.js Masterclass" 
-                students={210} 
-                earnings="$8,900" 
-                rating={4.9} 
-                status="Published" 
-              />
-              <CourseCard 
-                title="Database Design for Beginners" 
-                students={0} 
-                earnings="$0" 
-                rating={0} 
-                status="Draft" 
-              />
+              {loading ? (
+                <div className="text-center py-10 text-slate-500">Loading courses...</div>
+              ) : courses.length > 0 ? (
+                courses.map((course) => (
+                  <CourseCard 
+                    key={course.id}
+                    title={course.title} 
+                    students={course.totalEnrollments || 0} 
+                    earnings={(course.price || 0).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} 
+                    rating={course.averageRating || 0} 
+                    status={course.status === 'active' ? 'Published' : 'Draft'} 
+                  />
+                ))
+              ) : (
+                <div className="text-center py-10 text-slate-500 bg-white rounded-xl border border-slate-200">
+                  <p>You haven't created any courses yet.</p>
+                  <Link to="/create-new-course" className="text-[#1976d2] font-semibold hover:underline mt-2 inline-block">
+                    Create your first course
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
