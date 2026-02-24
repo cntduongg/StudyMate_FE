@@ -14,8 +14,6 @@ import CreateNewCourse from './create-new-course/create-new-course'
 import Curriculum from './create-new-course/curriculum'
 import QuizSetup from './create-new-course/quiz-setup'
 import Flashcards from './create-new-course/flashcards'
-import CourseSettings from './create-new-course/course-settings'
-
 // Layout component to provide course context
 import { Outlet } from 'react-router-dom'
 const CourseCreationLayout = () => (
