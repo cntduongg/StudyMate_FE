@@ -164,11 +164,11 @@ const PricingCard: React.FC<{
 const Membership: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  // const [error, setError] = useState('')
 
   const handlePremiumPayment = async () => {
     setLoading(true)
-    setError('')
+    // setError('')
 
     try {
       const token = localStorage.getItem('token')
@@ -207,7 +207,7 @@ const Membership: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Payment error:', err)
-      setError(err.message || 'Có lỗi xảy ra khi xử lý thanh toán')
+      // setError(err.message || 'Có lỗi xảy ra khi xử lý thanh toán')
       alert(err.message || 'Có lỗi xảy ra khi xử lý thanh toán')
       setLoading(false)
     }

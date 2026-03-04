@@ -25,6 +25,8 @@ import Payment from './payment/payment'
 import PaymentSuccess from './payment/payment-success'
 import PaymentCancel from './payment/payment-cancel'
 import AIChat from './chatbot/AIChat'
+import CommunityPage from './community/CommunityPage'
+import PostDetail from './community/PostDetail'
 
 // Layout component to provide course context
 import { Outlet } from 'react-router-dom'
@@ -62,6 +64,8 @@ const App: React.FC = () => {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/user-management" element={<UserManagement />} />
           <Route path="/course-management" element={<CourseManagement />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/community/:postId" element={<PostDetail />} />
           
           {/* Payment Routes */}
           <Route path="/payment" element={<Payment />} />
