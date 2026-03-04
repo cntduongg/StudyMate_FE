@@ -21,6 +21,10 @@ import Flashcards from './create-new-course/flashcards'
 import AdminDashboard from './admin-dashboard/admin-dashboard'
 import UserManagement from './user-management/user-management'
 import CourseManagement from './course-management/course-management'
+import Payment from './payment/payment'
+import PaymentSuccess from './payment/payment-success'
+import PaymentCancel from './payment/payment-cancel'
+import AIChat from './chatbot/AIChat'
 
 // Layout component to provide course context
 import { Outlet } from 'react-router-dom'
@@ -59,6 +63,11 @@ const App: React.FC = () => {
           <Route path="/user-management" element={<UserManagement />} />
           <Route path="/course-management" element={<CourseManagement />} />
           
+          {/* Payment Routes */}
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
+          
           {/* Course Creation Routes wrapped in Provider */}
           <Route element={<CourseCreationLayout />}>
             <Route path="/create-new-course" element={<CreateNewCourse />} />
@@ -69,6 +78,9 @@ const App: React.FC = () => {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        
+        {/* AI Chat - Available on all pages */}
+        <AIChat />
       </BrowserRouter>
     </AuthProvider>
   )
