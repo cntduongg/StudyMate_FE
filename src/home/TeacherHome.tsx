@@ -160,7 +160,6 @@ const TeacherHome: React.FC = () => {
               <NavItem to="/">Home</NavItem>
               <NavItem to="/courses">Courses</NavItem>
               <NavItem to="/community">Community</NavItem>
-              <NavItem>AI Tutor</NavItem>
               <NavItem>Game</NavItem>
             </nav>
 
