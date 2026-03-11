@@ -28,6 +28,8 @@ import PaymentCancel from './payment/payment-cancel'
 import AIChat from './chatbot/AIChat'
 import CommunityPage from './community/CommunityPage'
 import PostDetail from './community/PostDetail'
+import CreatePost from './community/CreatePost'
+import EditPost from './community/EditPost'
 import ChatPage from './chat/ChatPage'
 
 // Layout component to provide course context
@@ -68,6 +70,8 @@ const App: React.FC = () => {
           <Route path="/user-management" element={<UserManagement />} />
           <Route path="/course-management" element={<CourseManagement />} />
           <Route path="/community" element={<CommunityPage />} />
+          <Route path="/community/create" element={<CreatePost />} />
+          <Route path="/community/edit/:postId" element={<EditPost />} />
           <Route path="/community/:postId" element={<PostDetail />} />
           <Route path="/chat" element={<ChatPage />} />
           

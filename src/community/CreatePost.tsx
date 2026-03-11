@@ -1,0 +1,195 @@
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import LogoImg from '../accesory/picture/StudyMate 1.png'
+import { NavItem } from '../home/StudentHome'
+import { createPost } from '../services/blogService'
+
+const CreatePost: React.FC = () => {
+  const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!isAuthenticated) {
+      alert('Please log in to create a post.')
+      navigate('/login')
+      return
+    }
+
+    if (!title.trim() || !content.trim()) {
+      setError('Title and content are required.')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setError(null)
+
+      const postData = {
+        title: title.trim(),
+        content: content.trim(),
+        ...(imageUrl.trim() && { imageUrl: imageUrl.trim() })
+      }
+
+      await createPost(postData)
+      navigate('/community')
+    } catch (error) {
+      console.error('Failed to create post:', error)
+      setError('Failed to create post. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f8f9fa]">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2">
+              <img src={LogoImg} alt="StudyMate" className="h-8 w-auto" />
+              <span className="text-xl font-bold text-[#1976d2] tracking-tight">StudyMate</span>
+            </Link>
+            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+              <NavItem to="/">Home</NavItem>
+              <NavItem to="/courses">Courses</NavItem>
+              <NavItem to="/community">Community</NavItem>
+            </nav>
+          </div>
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <Link to="/profile" className="h-8 w-8 rounded-full bg-[#1976d2] text-white flex items-center justify-center font-bold text-xs">
+                {user?.fullName?.charAt(0).toUpperCase() || 'U'}
+              </Link>
+            ) : (
+              <Link to="/login" className="text-sm font-bold text-slate-700">Log In</Link>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mb-6">
+          <Link to="/community" className="text-[#1976d2] hover:underline text-sm font-medium">
+            <i className="fa-solid fa-arrow-left mr-2"></i>
+            Back to Community
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+          <h1 className="text-3xl font-extrabold text-slate-900 mb-6">Create New Post</h1>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-6">
+              <label htmlFor="title" className="block text-sm font-semibold text-slate-800 mb-2">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter your post title"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1976d2]/20 focus:border-[#1976d2]"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="content" className="block text-sm font-semibold text-slate-800 mb-2">
+                Content <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your post content..."
+                rows={10}
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1976d2]/20 focus:border-[#1976d2] resize-y"
+                disabled={isSubmitting}
+              ></textarea>
+            </div>
+
+            <div className="mb-8">
+              <label htmlFor="imageUrl" className="block text-sm font-semibold text-slate-800 mb-2">
+                Image URL (optional)
+              </label>
+              <input
+                type="url"
+                id="imageUrl"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1976d2]/20 focus:border-[#1976d2]"
+                disabled={isSubmitting}
+              />
+              {imageUrl && (
+                <div className="mt-3">
+                  <p className="text-xs text-slate-500 mb-2">Preview:</p>
+                  <img 
+                    src={imageUrl} 
+                    alt="Preview" 
+                    className="max-w-full h-48 object-cover rounded-lg border border-slate-200"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-[#1976d2] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#1565c0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-paper-plane mr-2"></i>
+                    Create Post
+                  </>
+                )}
+              </button>
+              <Link
+                to="/community"
+                className="px-6 py-3 rounded-lg font-bold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors text-center"
+              >
+                Cancel
+              </Link>
+            </div>
+          </form>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-50 border-t border-slate-200 py-10 mt-10">
+        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-slate-500">
+          © 2025 StudyMate. All rights reserved.
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+export default CreatePost
