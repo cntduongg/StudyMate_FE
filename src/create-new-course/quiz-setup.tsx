@@ -1,20 +1,8 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import type { QuizQuestion } from '../contexts/CourseContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-
-const NavItem: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <a
-      href="#"
-      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-    >
-      {children}
-    </a>
-  )
-}
+import MainHeader from '../components/MainHeader'
 
 const Step: React.FC<{
   number: number
@@ -47,7 +35,6 @@ const Step: React.FC<{
 }
 
 const QuizSetup: React.FC = () => {
-  const { user, logout } = useAuth()
   const { courseData, updateCourseData } = useCourse()
   const currentStep: number = 3
 
@@ -85,7 +72,7 @@ const QuizSetup: React.FC = () => {
     }
 
     const newQuiz = {
-      title: courseData.quizzes[0]?.title || 'Default Quiz',
+      title: courseData.quizzes[0]?.title || 'Quiz 1',
       questions: [...(courseData.quizzes[0]?.questions || []), currentQuestion]
     }
 
@@ -155,73 +142,7 @@ const QuizSetup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      {/* Top nav */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
-              </Link>
-              <NavItem>Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              <div className="flex items-center gap-3">
-                  <Link to="/profile" className="flex items-center gap-3 group">
-                    <div className="hidden md:flex flex-col items-end mr-2">
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                        {user?.fullName || 'Teacher'}
-                      </span>
-                      <span className="text-[10px] text-slate-500 capitalize">
-                        {user?.role || 'Lecturer'}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer group-hover:bg-[#1565c0] transition-colors">
-                      <span className="font-semibold text-xs">
-                        {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'T'}
-                      </span>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <Link 

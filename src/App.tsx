@@ -7,6 +7,7 @@ import Home from './home'
 import StudentCourses from './home/StudentCourses'
 import CourseDetail from './home/CourseDetail'
 import TeacherCourses from './home/TeacherCourses'
+import TeacherCourseDetail from './home/TeacherCourseDetail'
 import GamePage from './game/GamePage'
 import { useAuth } from './contexts/AuthContext'
 import Login from './login/login'
@@ -59,6 +60,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/courses" element={<CoursesRouter />} />
             <Route path="/courses/:id" element={<CourseDetail />} />
+            <Route path="/teacher/courses/:id" element={<TeacherCourseDetail />} />
             <Route path="/game" element={<GamePage />} />
             <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

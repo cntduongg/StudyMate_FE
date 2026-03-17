@@ -50,6 +50,9 @@ const Login: React.FC = () => {
           if (userRole === 'admin') {
             console.log('Redirecting to admin dashboard')
             navigate('/admin/dashboard')
+          } else if (userRole === 'teacher' || userRole === 'lecturer') {
+            console.log('Redirecting teacher to courses')
+            navigate('/courses')
           } else {
             console.log('Redirecting to home')
             navigate('/')

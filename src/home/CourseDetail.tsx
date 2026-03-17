@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import MainHeader from '../components/MainHeader'
 import LogoImg from '../accesory/picture/StudyMate 1.png'
 
 interface Lesson {
   id: string
   title: string
   duration: string
-  type: 'video' | 'reading' | 'quiz'
+  type: 'video' | 'reading' | 'quiz' | 'flashcard'
   completed?: boolean
   videoUrl?: string
   content?: string
@@ -28,8 +29,6 @@ interface DetailedCourse {
   instructor: string
   instructorTitle: string
   instructorImage: string
-  rating: number
-  reviewCount: number
   enrolledCount: number
   level: string
   duration: string
@@ -40,46 +39,95 @@ interface DetailedCourse {
   syllabus: Section[]
 }
 
-const mockDetailedCourse: DetailedCourse = {
-  id: 101,
-  title: "Google Data Analytics Professional Certificate",
-  description: "Get started in the high-growth field of data analytics with a professional certificate from Google.",
-  longDescription: "This is your path to a career in data analytics. In this program, you’ll learn in-demand skills that will have you job-ready in less than six months. No degree or experience required. Data analytics is the collection, transformation, and organization of data in order to draw conclusions, make predictions, and drive informed decision-making.",
-  instructor: "Google Career Certificates",
-  instructorTitle: "Top Instructor",
-  instructorImage: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg",
-  rating: 4.8,
-  reviewCount: 125430,
-  enrolledCount: 1205400,
-  level: "Beginner",
-  duration: "6 months at 10 hours/week",
-  providerName: "Google",
-  providerLogo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg",
-  thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200",
-  skills: ["Data Analysis", "R Programming", "SQL", "Tableau", "Data Visualization", "Spreadsheets"],
-  syllabus: [
-    {
-      id: "s1",
-      title: "Foundations: Data, Data, Everywhere",
-      lessons: [
-        { id: "l1", title: "Introduction to Data Analytics", duration: "10 min", type: "video", videoUrl: "https://www.youtube.com/embed/KxryzSO1Fjs" },
-        { id: "l2", title: "Thinking Like an Analyst", duration: "15 min", type: "video", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-        { id: "l3", title: "Data Analyst Tools", duration: "5 min", type: "reading", content: "Data analysts use various tools like SQL, Excel, and R..." },
-        { id: "l4", title: "Weekly Quiz: Foundations", duration: "20 min", type: "quiz", questions: [
-          { q: "What is data analytics?", options: ["Collecting data", "Cleaning data", "Drawing conclusions", "All of the above"], a: 3 }
-        ]}
-      ]
-    },
-    {
-      id: "s2",
-      title: "Ask Questions to Make Data-Driven Decisions",
-      lessons: [
-        { id: "l5", title: "Effective Questioning", duration: "12 min", type: "video" },
-        { id: "l6", title: "Data-Driven Decisions", duration: "8 min", type: "video" },
-        { id: "l7", title: "Spreadsheet Basics", duration: "20 min", type: "video" }
-      ]
-    }
+const defaultDetailedCourse: DetailedCourse = {
+  id: 0,
+  title: "Untitled Course",
+  description: "No description available.",
+  longDescription: "No description available.",
+  instructor: "StudyMate Instructor",
+  instructorTitle: "Instructor",
+  instructorImage: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+  enrolledCount: 0,
+  level: "All Levels",
+  duration: "0 section(s)",
+  providerName: "StudyMate",
+  providerLogo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+  thumbnailUrl: "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=1200",
+  skills: ["General"],
+  syllabus: []
+}
+
+const mapApiCourseToDetailedCourse = (raw: any): DetailedCourse => {
+  const materialSections: Section[] = Array.isArray(raw?.sections)
+    ? raw.sections.map((section: any, sectionIndex: number) => ({
+        id: `s-${section.id ?? sectionIndex + 1}`,
+        title: section.title || 'Untitled Section',
+        lessons: (section.materials || []).map((material: any, materialIndex: number) => ({
+          id: `m-${material.id ?? `${sectionIndex + 1}-${materialIndex + 1}`}`,
+          title: material.title || 'Untitled Lesson',
+          duration: '10 min',
+          type: String(material.materialType || '').toLowerCase().includes('video') ? 'video' : 'reading',
+          videoUrl: material.fileUrl || undefined,
+          content: material.description || material.title || 'No content available.'
+        }))
+      }))
+    : []
+
+  const quizSection: Section = {
+    id: 's-quiz',
+    title: 'Quizzes',
+    lessons: Array.isArray(raw?.quizzes)
+      ? raw.quizzes.map((quiz: any, quizIndex: number) => ({
+          id: `q-${quiz.id ?? quizIndex + 1}`,
+          title: quiz.title || 'Quiz',
+          duration: `${(quiz.questions || []).length} question(s)`,
+          type: 'quiz',
+          questions: (quiz.questions || []).map((question: any) => ({
+            q: question.questionText,
+            options: (question.options || []).map((option: any) => option.optionText),
+            a: Math.max(0, (question.options || []).findIndex((option: any) => option.isCorrect))
+          }))
+        }))
+      : []
+  }
+
+  const flashcardSection: Section = {
+    id: 's-flashcard',
+    title: 'Flashcards',
+    lessons: Array.isArray(raw?.flashcards)
+      ? raw.flashcards.map((flashcard: any, flashcardIndex: number) => ({
+          id: `f-${flashcard.id ?? flashcardIndex + 1}`,
+          title: flashcard.front || `Flashcard ${flashcardIndex + 1}`,
+          duration: '1 card',
+          type: 'flashcard',
+          content: flashcard.back || ''
+        }))
+      : []
+  }
+
+  const syllabus = [
+    ...materialSections,
+    ...(quizSection.lessons.length > 0 ? [quizSection] : []),
+    ...(flashcardSection.lessons.length > 0 ? [flashcardSection] : [])
   ]
+
+  return {
+    id: Number(raw?.id || 0),
+    title: raw?.title || 'Untitled Course',
+    description: raw?.description || 'No description available.',
+    longDescription: raw?.description || 'No description available.',
+    instructor: raw?.teacherName || 'StudyMate Instructor',
+    instructorTitle: 'Instructor',
+    instructorImage: raw?.teacherAvatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+    enrolledCount: Number(raw?.totalEnrollments || 0),
+    level: 'All Levels',
+    duration: `${Number(raw?.totalSections || 0)} section(s)`,
+    providerName: raw?.teacherName || 'StudyMate',
+    providerLogo: raw?.teacherAvatar || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=1200',
+    skills: raw?.categoryName ? [raw.categoryName] : ['General'],
+    syllabus
+  }
 }
 
 const CourseDetail: React.FC = () => {
@@ -88,9 +136,22 @@ const CourseDetail: React.FC = () => {
   const navigate = useNavigate()
   
   const [isEnrolled, setIsEnrolled] = useState(false)
-  const [activeSection, setActiveSection] = useState<string | null>("s1")
+  const [activeSection, setActiveSection] = useState<string | null>(null)
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
   const [loading, setLoading] = useState(false)
+  const [detailLoading, setDetailLoading] = useState(true)
+  const [detailError, setDetailError] = useState('')
+  const [enrollError, setEnrollError] = useState('')
+  const [courseDetail, setCourseDetail] = useState<DetailedCourse | null>(null)
+  const [showFlashcardBack, setShowFlashcardBack] = useState(false)
+
+  const mockDetailedCourse = courseDetail ?? defaultDetailedCourse
+  const totalLessons = mockDetailedCourse.syllabus.reduce((sum, section) => sum + section.lessons.length, 0)
+  const completedLessons = mockDetailedCourse.syllabus.reduce(
+    (sum, section) => sum + section.lessons.filter((lesson) => lesson.completed).length,
+    0
+  )
+  const completionPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
   // Helper function to get YouTube embed URL
   const getEmbedUrl = (url: string | undefined) => {
@@ -107,51 +168,166 @@ const CourseDetail: React.FC = () => {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : url
   }
 
-  // Simulation of loading data
   useEffect(() => {
-    // In a real app, fetch by id
-    // For now, we use the mock
-    setSelectedLesson(mockDetailedCourse.syllabus[0].lessons[0])
-  }, [id])
+    const fetchCourseDetail = async () => {
+      if (!id) {
+        setDetailError('Invalid course id')
+        setDetailLoading(false)
+        return
+      }
 
-  const handleEnroll = () => {
+      try {
+        let mappedCourse: DetailedCourse | null = null
+
+        const response = await fetch(`https://localhost:7259/api/Course/public/${id}`)
+
+        if (response.ok) {
+          const result = await response.json()
+          mappedCourse = mapApiCourseToDetailedCourse(result?.data)
+        } else {
+          const listResponse = await fetch('https://localhost:7259/api/Course/all')
+
+          if (listResponse.ok) {
+            const listResult = await listResponse.json()
+            const apiData = Array.isArray(listResult?.data) ? listResult.data : []
+            const matchedCourse = apiData.find((course: any) => Number(course?.id) === Number(id))
+
+            if (matchedCourse) {
+              mappedCourse = mapApiCourseToDetailedCourse(matchedCourse)
+            }
+          }
+        }
+
+        if (!mappedCourse) {
+          setDetailError('Failed to load course detail')
+          return
+        }
+
+        setCourseDetail(mappedCourse)
+
+        const firstSection = mappedCourse.syllabus[0]
+        const firstLesson = firstSection?.lessons?.[0] || null
+        setActiveSection(firstSection?.id || null)
+        setSelectedLesson(firstLesson)
+
+        const token = localStorage.getItem('token')
+        const role = String(user?.role || '').toLowerCase()
+        if (token && role === 'student') {
+          const statusResponse = await fetch(`https://localhost:7259/api/course-student/${id}/enrollment-status`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json().catch(() => null)
+            setIsEnrolled(Boolean(statusData?.isEnrolled))
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch course detail:', error)
+        setDetailError('Network error while loading course detail')
+      } finally {
+        setDetailLoading(false)
+      }
+    }
+
+    fetchCourseDetail()
+  }, [id, user?.role])
+
+  useEffect(() => {
+    setShowFlashcardBack(false)
+  }, [selectedLesson?.id])
+
+  const handleEnroll = async () => {
     if (!isAuthenticated) {
       navigate('/login')
       return
     }
+
+    const token = localStorage.getItem('token')
+    if (!token) {
+      navigate('/login')
+      return
+    }
+
+    if (!id) {
+      setEnrollError('Invalid course id')
+      return
+    }
+
+    setEnrollError('')
     setLoading(true)
-    setTimeout(() => {
-      setIsEnrolled(true)
+
+    try {
+      const response = await fetch(`https://localhost:7259/api/course-student/${id}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        setIsEnrolled(true)
+        return
+      }
+
+      const text = await response.text()
+      let message = text || 'Enroll failed'
+      try {
+        const parsed = JSON.parse(text)
+        if (parsed?.message) {
+          message = parsed.message
+        }
+      } catch {
+      }
+      setEnrollError(message)
+
+      if (message.toLowerCase().includes('already enrolled')) {
+        setIsEnrolled(true)
+        setEnrollError('')
+        return
+      }
+
+      if (message.toLowerCase().includes('premium')) {
+        setTimeout(() => navigate('/membership'), 1200)
+      }
+    } catch (error) {
+      console.error('Enroll error:', error)
+      setEnrollError('Network error while enrolling')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
+  }
+
+  if (detailLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <i className="fa-solid fa-spinner fa-spin text-3xl text-[#1976d2] mb-3"></i>
+          <p className="text-slate-600">Loading course detail...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (detailError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <i className="fa-solid fa-circle-exclamation text-3xl text-red-500 mb-3"></i>
+          <p className="text-red-600 mb-4">{detailError}</p>
+          <Link to="/courses" className="bg-[#1976d2] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#1565c0] transition-colors">
+            Back to Courses
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2">
-              <img src={LogoImg} alt="StudyMate" className="h-8 w-auto" />
-              <span className="text-xl font-bold text-[#1976d2] tracking-tight">StudyMate</span>
-            </Link>
-            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-              <Link to="/courses" className="hover:text-[#1976d2]">Explore Courses</Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <Link to="/profile" className="h-8 w-8 rounded-full bg-[#1976d2] text-white flex items-center justify-center font-bold text-xs">
-                {user?.fullName?.charAt(0).toUpperCase() || 'U'}
-              </Link>
-            ) : (
-              <Link to="/login" className="text-sm font-bold text-slate-700">Log In</Link>
-            )}
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       {/* Hero Section */}
       {!isEnrolled ? (
@@ -167,13 +343,6 @@ const CourseDetail: React.FC = () => {
                 <p className="text-xl text-slate-300 max-w-2xl">{mockDetailedCourse.description}</p>
                 <div className="flex flex-wrap items-center gap-6 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="flex text-yellow-400">
-                      {[1, 2, 3, 4, 5].map(i => <i key={i} className="fa-solid fa-star"></i>)}
-                    </div>
-                    <span className="font-bold">{mockDetailedCourse.rating}</span>
-                    <span className="text-slate-400">({mockDetailedCourse.reviewCount.toLocaleString()} reviews)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <i className="fa-solid fa-users text-slate-400"></i>
                     <span>{mockDetailedCourse.enrolledCount.toLocaleString()} already enrolled</span>
                   </div>
@@ -187,9 +356,10 @@ const CourseDetail: React.FC = () => {
                     {loading ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> : 'Enroll for Free'}
                     <span className="text-sm font-normal opacity-80">Starts Feb 25</span>
                   </button>
+                  {enrollError && <p className="text-sm text-red-300">{enrollError}</p>}
                   <div className="flex flex-col justify-center text-xs text-slate-400">
                     <span className="font-bold text-white">Financial aid available</span>
-                    <span>1,205,400 already enrolled</span>
+                    <span>{mockDetailedCourse.enrolledCount.toLocaleString()} already enrolled</span>
                   </div>
                 </div>
               </div>
@@ -240,18 +410,20 @@ const CourseDetail: React.FC = () => {
                         className="w-full px-6 py-5 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <span className="text-slate-400 font-bold">COURSE {idx + 1}</span>
+                          <span className="text-slate-400 font-bold">SECTION {idx + 1}</span>
                           <h3 className="font-bold text-slate-900">{section.title}</h3>
                         </div>
                         <i className={`fa-solid fa-chevron-${activeSection === section.id ? 'up' : 'down'} text-slate-400`}></i>
                       </button>
                       {activeSection === section.id && (
                         <div className="px-6 pb-6 pt-2 space-y-4 border-t border-slate-100">
-                          <p className="text-sm text-slate-500 mb-4">In this course, you’ll be introduced to the world of data analytics through a curriculum developed by Google...</p>
+                          <p className="text-sm text-slate-500 mb-4">
+                            {section.lessons.length} lesson(s) in this section.
+                          </p>
                           {section.lessons.map(lesson => (
                             <div key={lesson.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                               <div className="flex items-center gap-3">
-                                <i className={`fa-solid ${lesson.type === 'video' ? 'fa-circle-play text-[#1976d2]' : lesson.type === 'quiz' ? 'fa-clipboard-question text-orange-500' : 'fa-file-lines text-green-500'} w-5`}></i>
+                                <i className={`fa-solid ${lesson.type === 'video' ? 'fa-circle-play text-[#1976d2]' : lesson.type === 'quiz' ? 'fa-clipboard-question text-orange-500' : lesson.type === 'flashcard' ? 'fa-layer-group text-purple-500' : 'fa-file-lines text-green-500'} w-5`}></i>
                                 <span className="text-sm font-medium text-slate-700">{lesson.title}</span>
                               </div>
                               <span className="text-xs text-slate-400">{lesson.duration}</span>
@@ -299,9 +471,10 @@ const CourseDetail: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <button onClick={handleEnroll} className="w-full bg-[#1976d2] text-white py-3 rounded-md font-bold hover:bg-[#1565c0] transition-colors shadow-lg">
-                    Enroll for Free
+                  <button onClick={handleEnroll} disabled={loading} className="w-full bg-[#1976d2] text-white py-3 rounded-md font-bold hover:bg-[#1565c0] transition-colors shadow-lg disabled:opacity-70">
+                    {loading ? 'Enrolling...' : 'Enroll for Free'}
                   </button>
+                  {enrollError && <p className="text-xs text-red-600">{enrollError}</p>}
                 </div>
 
                 <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
@@ -325,9 +498,9 @@ const CourseDetail: React.FC = () => {
           <div className="w-full lg:w-80 bg-white border-r border-slate-200 overflow-y-auto order-2 lg:order-1">
             <div className="p-6 border-b border-slate-100 bg-slate-50">
               <h3 className="font-bold text-slate-900">Course Content</h3>
-              <p className="text-xs text-slate-500 mt-1">12 / 48 lessons completed</p>
+              <p className="text-xs text-slate-500 mt-1">{completedLessons} / {totalLessons} lessons completed</p>
               <div className="mt-4 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500 w-1/4"></div>
+                <div className="h-full bg-green-500" style={{ width: `${completionPercent}%` }}></div>
               </div>
             </div>
             
@@ -335,7 +508,7 @@ const CourseDetail: React.FC = () => {
               {mockDetailedCourse.syllabus.map((section, sIdx) => (
                 <div key={section.id}>
                   <div className="p-4 bg-slate-50/50 font-bold text-xs text-slate-400 uppercase tracking-widest flex items-center justify-between">
-                    <span>Module {sIdx + 1}: {section.title}</span>
+                    <span>Section {sIdx + 1}: {section.title}</span>
                   </div>
                   <div className="bg-white">
                     {section.lessons.map(lesson => (
@@ -351,7 +524,7 @@ const CourseDetail: React.FC = () => {
                           <p className={`text-sm font-bold leading-tight ${selectedLesson?.id === lesson.id ? 'text-[#1976d2]' : 'text-slate-700'}`}>{lesson.title}</p>
                           <div className="flex items-center gap-3 mt-1.5">
                             <span className="flex items-center gap-1 text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                              <i className={`fa-solid ${lesson.type === 'video' ? 'fa-circle-play' : lesson.type === 'quiz' ? 'fa-clipboard-question' : 'fa-file-lines'}`}></i>
+                              <i className={`fa-solid ${lesson.type === 'video' ? 'fa-circle-play' : lesson.type === 'quiz' ? 'fa-clipboard-question' : lesson.type === 'flashcard' ? 'fa-layer-group' : 'fa-file-lines'}`}></i>
                               {lesson.type}
                             </span>
                             <span className="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">{lesson.duration}</span>
@@ -392,6 +565,26 @@ const CourseDetail: React.FC = () => {
                         <p className="text-sm">Always verify your data sources before starting your analysis process.</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              ) : selectedLesson?.type === 'flashcard' ? (
+                <div className="w-full h-full bg-slate-50 overflow-y-auto flex items-center justify-center py-10 lg:p-10">
+                  <div className="w-full max-w-2xl bg-white p-6 lg:p-10 rounded-2xl shadow-xl h-fit">
+                    <div className="flex items-center gap-3 mb-6 text-purple-500">
+                      <i className="fa-solid fa-layer-group text-2xl"></i>
+                      <h2 className="text-2xl font-bold text-slate-900">Flashcard</h2>
+                    </div>
+                    <div className="border border-slate-200 rounded-xl p-8 min-h-48 flex items-center justify-center text-center">
+                      <p className="text-xl font-bold text-slate-800">
+                        {showFlashcardBack ? selectedLesson?.content || 'No answer' : selectedLesson?.title}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowFlashcardBack((prev) => !prev)}
+                      className="mt-6 w-full bg-[#1976d2] text-white py-3 rounded-xl font-bold hover:bg-[#1565c0] transition-all shadow-lg"
+                    >
+                      {showFlashcardBack ? 'Show Front' : 'Show Back'}
+                    </button>
                   </div>
                 </div>
               ) : (

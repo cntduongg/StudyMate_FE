@@ -1,12 +1,14 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-import { NavItem } from './StudentHome'
+import { courseService } from '../services/courseService'
+import MainHeader from '../components/MainHeader'
 
 const CourseCard: React.FC<{
   course: any
-}> = ({ course }) => {
+  onView: (courseId: number) => void
+  onEdit: (courseId: number) => void
+  onDelete: (courseId: number) => void
+}> = ({ course, onView, onEdit, onDelete }) => {
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all group p-5">
       <div className="flex flex-col md:flex-row gap-6">
@@ -39,23 +41,28 @@ const CourseCard: React.FC<{
               <span>{course.totalEnrollments || 0} students enrolled</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <i className="fa-solid fa-star text-yellow-500"></i>
-              <span>{course.averageRating || 0} (12 reviews)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
               <i className="fa-solid fa-clock text-slate-400"></i>
-              <span>Last updated: {new Date().toLocaleDateString()}</span>
+              <span>Last updated: {course.updatedAt ? new Date(course.updatedAt).toLocaleDateString() : 'N/A'}</span>
             </div>
           </div>
 
           <div className="mt-6 flex items-center gap-3">
-            <button className="bg-[#1976d2] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#1565c0] transition-colors">
+            <button
+              onClick={() => onView(course.id)}
+              className="border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors"
+            >
+              View Course
+            </button>
+            <button
+              onClick={() => onEdit(course.id)}
+              className="bg-[#1976d2] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#1565c0] transition-colors"
+            >
               Edit Course
             </button>
-            <button className="border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">
-              View Analytics
-            </button>
-            <button className="ml-auto text-red-500 hover:text-red-700 text-sm font-semibold">
+            <button
+              onClick={() => onDelete(course.id)}
+              className="ml-auto text-red-500 hover:text-red-700 text-sm font-semibold"
+            >
               Delete
             </button>
           </div>
@@ -66,7 +73,6 @@ const CourseCard: React.FC<{
 }
 
 const TeacherCourses: React.FC = () => {
-  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [courses, setCourses] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -75,21 +81,8 @@ const TeacherCourses: React.FC = () => {
   React.useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const token = localStorage.getItem('token')
-        if (!token) return
-
-        const response = await fetch('https://localhost:7259/api/Course/my-courses', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        
-        if (response.ok) {
-          const result = await response.json()
-          if (result && result.data) {
-            setCourses(result.data)
-          }
-        }
+        const courseData = await courseService.getMyCourses()
+        setCourses(courseData)
       } catch (error) {
         console.error('Failed to fetch courses:', error)
       } finally {
@@ -104,46 +97,32 @@ const TeacherCourses: React.FC = () => {
     c.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const handleViewCourse = (courseId: number) => {
+    navigate(`/teacher/courses/${courseId}`)
+  }
+
+  const handleEditCourse = (courseId: number) => {
+    navigate(`/create-new-course?mode=edit&courseId=${courseId}`)
+  }
+
+  const handleDeleteCourse = async (courseId: number) => {
+    if (!window.confirm('Are you sure you want to delete this course?')) {
+      return
+    }
+
+    try {
+      await courseService.deleteCourse(courseId)
+      setCourses(prev => prev.filter(c => c.id !== courseId))
+      alert('Course deleted successfully')
+    } catch (error) {
+      console.error('Failed to delete course:', error)
+      alert(error instanceof Error ? error.message : 'Failed to delete course')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      <header className="sticky top-0 z-10 bg-white border-b border-slate-200 shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-3">
-              <img src={LogoImg} alt="StudyMate" className="h-9 w-auto" />
-              <span className="text-xl font-bold text-[#1976d2]">StudyMate</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <NavItem to="/">Home</NavItem>
-              <NavItem to="/courses">Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link to="/profile" className="flex items-center gap-3 group">
-              <div className="hidden md:flex flex-col items-end">
-                <span className="text-sm font-bold text-slate-900">{user?.fullName || 'Teacher'}</span>
-                <span className="text-[10px] text-slate-500 font-medium bg-slate-100 px-1.5 py-0.5 rounded">Lecturer</span>
-              </div>
-              <div className="h-9 w-9 rounded-full bg-[#1976d2] flex items-center justify-center text-white font-bold ring-2 ring-white ring-offset-1">
-                {user?.fullName?.charAt(0).toUpperCase() || 'T'}
-              </div>
-            </Link>
-            <button 
-              onClick={async () => {
-                await logout()
-                navigate('/')
-              }} 
-              className="text-slate-500 hover:text-red-600"
-            >
-              <i className="fa-solid fa-right-from-bracket text-lg"></i>
-            </button>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-5xl px-4 py-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -180,7 +159,13 @@ const TeacherCourses: React.FC = () => {
             </div>
           ) : filteredCourses.length > 0 ? (
             filteredCourses.map(course => (
-              <CourseCard key={course.id} course={course} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                onView={handleViewCourse}
+                onEdit={handleEditCourse}
+                onDelete={handleDeleteCourse}
+              />
             ))
           ) : (
             <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">

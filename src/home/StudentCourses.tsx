@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
+import { Link } from 'react-router-dom'
+import MainHeader from '../components/MainHeader'
 
 interface Course {
   id: number
   title: string
   description: string
-  price: number
   level: string
   thumbnailUrl?: string
-  averageRating?: number
   totalEnrollments?: number
   lecturerName?: string
   // Coursera-specific mock fields
@@ -18,102 +15,34 @@ interface Course {
   providerLogo?: string
   skills?: string[]
   duration?: string
-  reviewCount?: number
   courseType?: 'Course' | 'Specialization' | 'Professional Certificate'
 }
 
-const mockCourses: Course[] = [
-  {
-    id: 101,
-    title: "Google Data Analytics",
-    description: "Get started in the high-growth field of data analytics with a professional certificate from Google. Learn how to process and analyze data, use key analytical tools, apply R programming, and create visualizations.",
-    price: 0,
-    level: "Beginner",
-    providerName: "Google",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg",
-    thumbnailUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.8,
-    reviewCount: 125430,
-    skills: ["Data Analysis", "R Programming", "SQL", "Tableau"],
-    duration: "6 months at 10 hours/week",
-    courseType: "Professional Certificate"
-  },
-  {
-    id: 102,
-    title: "Machine Learning Specialization",
-    description: "Build machine learning models with NumPy and scikit-learn, build and train supervised machine learning models for prediction and binary classification tasks.",
-    price: 1200000,
-    level: "Intermediate",
-    providerName: "Stanford University",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Stanford_University_seal.svg",
-    thumbnailUrl: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.9,
-    reviewCount: 85200,
-    skills: ["Supervised Learning", "Linear Regression", "Logistic Regression", "Neural Networks"],
-    duration: "3 months at 10 hours/week",
-    courseType: "Specialization"
-  },
-  {
-    id: 103,
-    title: "Python for Everybody",
-    description: "This Specialization builds on the success of the Python for Everybody course and will introduce fundamental programming concepts including data structures, networked application program interfaces, and databases.",
-    price: 0,
-    level: "Beginner",
-    providerName: "University of Michigan",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/a/ab/University_of_Michigan_Logo.svg",
-    thumbnailUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.8,
-    reviewCount: 245000,
-    skills: ["Python Programming", "Data Structures", "Web Scraping", "SQL"],
-    duration: "8 months at 3 hours/week",
-    courseType: "Specialization"
-  },
-  {
-    id: 104,
-    title: "Foundations of User Experience (UX) Design",
-    description: "Foundations of User Experience (UX) Design is the first of seven courses in the Google UX Design Professional Certificate.",
-    price: 0,
-    level: "Beginner",
-    providerName: "Google",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_\"G\"_Logo.svg",
-    thumbnailUrl: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.8,
-    reviewCount: 65400,
-    skills: ["UX Design", "Wireframing", "Prototyping", "User Research"],
-    duration: "4 weeks at 10 hours/week",
-    courseType: "Course"
-  },
-  {
-    id: 105,
-    title: "Financial Markets",
-    description: "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
-    price: 500000,
-    level: "Beginner",
-    providerName: "Yale University",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/2/22/Yale_University_Shield.svg",
-    thumbnailUrl: "https://images.unsplash.com/photo-1611974717483-585807d6a537?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.8,
-    reviewCount: 32100,
-    skills: ["Finance", "Risk Management", "Economics", "Markets"],
-    duration: "7 weeks at 5 hours/week",
-    courseType: "Course"
-  },
-  {
-    id: 106,
-    title: "Deep Learning Specialization",
-    description: "Master the fundamentals of deep learning and break into AI. Build and train deep neural networks, identify key architecture parameters, and implement vectorized neural networks.",
-    price: 1500000,
-    level: "Advanced",
-    providerName: "DeepLearning.AI",
-    providerLogo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/1869px-Python-logo-notext.svg.png",
-    thumbnailUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=800",
-    averageRating: 4.9,
-    reviewCount: 145000,
-    skills: ["Neural Networks", "Deep Learning", "Convolutional Neural Networks", "TensorFlow"],
-    duration: "5 months at 7 hours/week",
-    courseType: "Specialization"
+const mapCourseLevel = (totalSections: number): string => {
+  if (totalSections <= 3) return 'Beginner'
+  if (totalSections <= 6) return 'Intermediate'
+  return 'Advanced'
+}
+
+const normalizeCourse = (raw: any): Course => {
+  const totalSections = Number(raw.totalSections || 0)
+  const totalMaterials = Number(raw.totalMaterials || 0)
+
+  return {
+    id: raw.id,
+    title: raw.title || 'Untitled Course',
+    description: raw.description || 'No description available.',
+    level: mapCourseLevel(totalSections),
+    thumbnailUrl: undefined,
+    totalEnrollments: Number(raw.totalEnrollments || 0),
+    lecturerName: raw.teacherName || 'Unknown teacher',
+    providerName: raw.teacherName || 'StudyMate',
+    providerLogo: raw.teacherAvatar || undefined,
+    skills: raw.categoryName ? [raw.categoryName] : ['General'],
+    duration: `${totalSections} section(s) • ${totalMaterials} material(s)`,
+    courseType: 'Course'
   }
-]
+}
 
 const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   return (
@@ -172,14 +101,6 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
         </div>
 
         <div className="mt-auto space-y-3">
-          <div className="flex items-center gap-2 text-xs">
-            <div className="flex items-center text-yellow-500 font-bold">
-              <i className="fa-solid fa-star text-[10px] mr-1"></i>
-              <span>{course.averageRating}</span>
-            </div>
-            <span className="text-slate-400">({course.reviewCount?.toLocaleString()} reviews)</span>
-          </div>
-
           <div className="flex items-center justify-between text-[11px] font-medium text-slate-500">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">
@@ -191,12 +112,9 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
                 {course.level}
               </span>
             </div>
-            <div className="text-sm font-bold text-slate-900">
-              {course.price === 0 ? (
-                <span className="text-green-600">Free</span>
-              ) : (
-                course.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-              )}
+            <div className="text-xs text-slate-500 flex items-center gap-1">
+              <i className="fa-solid fa-user-group"></i>
+              <span>{course.totalEnrollments || 0} enrolled</span>
             </div>
           </div>
         </div>
@@ -206,8 +124,6 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
 }
 
 const StudentCourses: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuth()
-  const navigate = useNavigate()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -216,18 +132,17 @@ const StudentCourses: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch('https://localhost:7259/api/Course')
+        const response = await fetch('https://localhost:7259/api/Course/all')
         if (response.ok) {
           const result = await response.json()
-          const apiData = result.data || result || []
-          // Combine API data with mock data for a richer view
-          setCourses([...mockCourses, ...apiData.filter((c: any) => !mockCourses.some(m => m.id === c.id))])
+          const apiData = Array.isArray(result?.data) ? result.data : []
+          setCourses(apiData.map(normalizeCourse))
         } else {
-          setCourses(mockCourses)
+          setCourses([])
         }
       } catch (error) {
         console.error('Failed to fetch courses:', error)
-        setCourses(mockCourses)
+        setCourses([])
       } finally {
         setLoading(false)
       }
@@ -248,66 +163,7 @@ const StudentCourses: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top nav - Clean and Coursera-like */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-10">
-            <Link to="/" className="flex items-center gap-2">
-              <img src={LogoImg} alt="StudyMate" className="h-8 w-auto" />
-              <span className="text-xl font-bold text-[#1976d2] tracking-tight">StudyMate</span>
-            </Link>
-            
-            <button className="hidden lg:flex items-center gap-2 bg-[#1976d2] text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-[#145ca5] transition-colors">
-              Explore <i className="fa-solid fa-chevron-down text-[10px]"></i>
-            </button>
-
-            <div className="hidden md:block relative w-[300px] lg:w-[450px]">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <i className="fa-solid fa-magnifying-glass text-sm"></i>
-              </span>
-              <input 
-                type="text" 
-                placeholder="What do you want to learn?"
-                className="w-full pl-10 pr-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1976d2]/20 focus:border-[#1976d2] text-sm transition-all"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600">
-              <Link to="/" className="hover:text-[#1976d2]">Degrees</Link>
-              <Link to="/membership" className="hover:text-[#1976d2]">Certificate</Link>
-              <a href="#" className="hover:text-[#1976d2]">For Business</a>
-            </nav>
-
-            <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
-              {isAuthenticated ? (
-                <div className="flex items-center gap-4">
-                  <Link to="/profile" className="h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] flex items-center justify-center font-bold text-sm border border-[#bbdefb] hover:bg-[#bbdefb] transition-colors">
-                    {user?.fullName?.charAt(0).toUpperCase() || 'U'}
-                  </Link>
-                  <button
-                    onClick={async () => {
-                      await logout()
-                      navigate('/')
-                    }}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <Link to="/login" className="text-sm font-bold text-slate-700 hover:text-[#1976d2]">Log In</Link>
-                  <Link to="/register" className="bg-[#1976d2] text-white px-4 py-2 rounded-md text-sm font-bold hover:bg-[#145ca5]">Join for Free</Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-10">
         <div className="flex flex-col lg:flex-row gap-10">

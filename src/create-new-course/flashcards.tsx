@@ -1,20 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import type { CourseFlashcard } from '../contexts/CourseContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-
-const NavItem: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <a
-      href="#"
-      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-    >
-      {children}
-    </a>
-  )
-}
+import { courseService } from '../services/courseService'
+import MainHeader from '../components/MainHeader'
 
 const Step: React.FC<{
   number: number
@@ -47,8 +36,7 @@ const Step: React.FC<{
 }
 
 const Flashcards: React.FC = () => {
-  const { user, logout } = useAuth()
-  const { courseData, updateCourseData, resetCourseData } = useCourse()
+  const { courseData, updateCourseData, resetCourseData, mode, editingCourseId } = useCourse()
   const currentStep: number = 4
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -106,19 +94,9 @@ const Flashcards: React.FC = () => {
 
     setLoading(true)
     try {
-      const token = localStorage.getItem('token')
-      
-      if (!token) {
-        alert('You are not logged in. Please login first.')
-        setLoading(false)
-        return
-      }
-
-      // Prepare data for API
       const apiData = {
         title: courseData.title || "Untitled Course",
         description: courseData.description || "No description",
-        price: courseData.price || 0,
         categoryId: courseData.categoryId || 1,
         sections: courseData.sections.map((section) => ({
           title: section.title,
@@ -146,42 +124,21 @@ const Flashcards: React.FC = () => {
         }))
       }
 
-      console.log('Sending data to API:', apiData)
-
-      const response = await fetch('https://localhost:7259/api/Course/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(apiData)
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('API Error Response:', errorText)
-        
-        let errorMessage = 'Failed to create course'
-        try {
-          const errorJson = JSON.parse(errorText)
-          errorMessage = errorJson.message || errorMessage
-        } catch (e) {
-          errorMessage = errorText || `Error ${response.status}: ${response.statusText}`
+      if (mode === 'edit') {
+        if (!editingCourseId) {
+          throw new Error('Invalid course id for editing')
         }
-        
-        if (response.status === 401) {
-          errorMessage = 'Unauthorized: Please login again.'
-        }
-        
-        throw new Error(errorMessage)
+
+        await courseService.updateCourse(editingCourseId, apiData)
+      } else {
+        await courseService.createCourse(apiData)
       }
 
-      alert('Course created successfully!')
+      alert(mode === 'edit' ? 'Course updated successfully!' : 'Course created successfully!')
       resetCourseData()
-      navigate('/')
+      navigate('/courses')
     } catch (error) {
-      console.error('Error creating course:', error)
+      console.error('Error saving course:', error)
       alert(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setLoading(false)
@@ -190,73 +147,7 @@ const Flashcards: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      {/* Top nav */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
-              </Link>
-              <NavItem>Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              <div className="flex items-center gap-3">
-                  <Link to="/profile" className="flex items-center gap-3 group">
-                    <div className="hidden md:flex flex-col items-end mr-2">
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                        {user?.fullName || 'Teacher'}
-                      </span>
-                      <span className="text-[10px] text-slate-500 capitalize">
-                        {user?.role || 'Lecturer'}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer group-hover:bg-[#1565c0] transition-colors">
-                      <span className="font-semibold text-xs">
-                        {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'T'}
-                      </span>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <Link 

@@ -1,21 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import LogoImg from '../accesory/picture/StudyMate 1.png'
-
-const NavItem: React.FC<{ children: React.ReactNode; href?: string }> = ({
-  children,
-  href = '#',
-}) => {
-  return (
-    <a
-      href={href}
-      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-    >
-      {children}
-    </a>
-  )
-}
+import MainHeader from '../components/MainHeader'
 
 const CheckIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
   <svg
@@ -162,7 +147,6 @@ const PricingCard: React.FC<{
 }
 
 const Membership: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuth()
   const [loading, setLoading] = useState(false)
   // const [error, setError] = useState('')
 
@@ -215,91 +199,7 @@ const Membership: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top nav - Reused from Home */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <Link
-                to="/"
-                className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-              >
-                Home
-              </Link>
-              <NavItem>Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-[#e3f2fd] px-3 py-2 text-xs font-semibold text-[#1976d2]"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              {isAuthenticated ? (
-                <div className="flex items-center gap-3">
-                  <div className="hidden md:flex flex-col items-end mr-2">
-                    <span className="text-sm font-semibold text-slate-900">
-                      {user?.fullName || 'User'}
-                    </span>
-                    <span className="text-[10px] text-slate-500 capitalize">
-                      {user?.role || 'Student'}
-                    </span>
-                  </div>
-                  <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer hover:bg-[#1565c0] transition-colors">
-                    <span className="font-semibold text-xs">
-                      {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <i className="fa-solid fa-user"></i>}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => logout()}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="text-sm font-semibold text-slate-700 hover:text-slate-900"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="rounded-md bg-[#1976d2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#145ca5] transition-colors"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="pb-20">
         {/* Header Section */}

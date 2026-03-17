@@ -43,7 +43,6 @@ export interface CourseFlashcard {
 export interface CourseData {
   title: string
   description: string
-  price: number
   categoryId: number
   level: string
   duration: number
@@ -53,9 +52,16 @@ export interface CourseData {
   flashcards: CourseFlashcard[]
 }
 
+export type CourseMode = 'create' | 'edit'
+
 interface CourseContextType {
   courseData: CourseData
+  mode: CourseMode
+  editingCourseId: number | null
   updateCourseData: (data: Partial<CourseData>) => void
+  setCourseData: (data: CourseData) => void
+  setEditMode: (courseId: number) => void
+  setCreateMode: () => void
   resetCourseData: () => void
 }
 
@@ -64,7 +70,6 @@ const CourseContext = createContext<CourseContextType | undefined>(undefined)
 const initialCourseData: CourseData = {
   title: '',
   description: '',
-  price: 0,
   categoryId: 0,
   level: 'beginner',
   duration: 0,
@@ -76,17 +81,45 @@ const initialCourseData: CourseData = {
 
 export const CourseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [courseData, setCourseData] = useState<CourseData>(initialCourseData)
+  const [mode, setMode] = useState<CourseMode>('create')
+  const [editingCourseId, setEditingCourseId] = useState<number | null>(null)
 
   const updateCourseData = (data: Partial<CourseData>) => {
     setCourseData((prev) => ({ ...prev, ...data }))
   }
 
+  const setFullCourseData = (data: CourseData) => {
+    setCourseData(data)
+  }
+
+  const setEditMode = (courseId: number) => {
+    setMode('edit')
+    setEditingCourseId(courseId)
+  }
+
+  const setCreateMode = () => {
+    setMode('create')
+    setEditingCourseId(null)
+  }
+
   const resetCourseData = () => {
     setCourseData(initialCourseData)
+    setCreateMode()
   }
 
   return (
-    <CourseContext.Provider value={{ courseData, updateCourseData, resetCourseData }}>
+    <CourseContext.Provider
+      value={{
+        courseData,
+        mode,
+        editingCourseId,
+        updateCourseData,
+        setCourseData: setFullCourseData,
+        setEditMode,
+        setCreateMode,
+        resetCourseData
+      }}
+    >
       {children}
     </CourseContext.Provider>
   )

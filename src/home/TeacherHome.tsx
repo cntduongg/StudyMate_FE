@@ -1,8 +1,7 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-import { NavItem } from './StudentHome'
+import MainHeader from '../components/MainHeader'
 
 const StatCard: React.FC<{
   label: string
@@ -31,10 +30,10 @@ const StatCard: React.FC<{
 const CourseCard: React.FC<{
   title: string
   students: number
-  earnings: string
+  sections: number
   rating: number
   status: 'Published' | 'Draft'
-}> = ({ title, students, earnings, rating, status }) => {
+}> = ({ title, students, sections, rating, status }) => {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all">
       <div className="flex justify-between items-start">
@@ -45,7 +44,7 @@ const CourseCard: React.FC<{
               <i className="fa-solid fa-user-group text-slate-400"></i> {students} students
             </span>
             <span className="flex items-center gap-1">
-              <i className="fa-solid fa-dollar-sign text-slate-400"></i> {earnings}
+              <i className="fa-solid fa-layer-group text-slate-400"></i> {sections} sections
             </span>
             <span className="flex items-center gap-1 text-yellow-500 font-medium">
               <i className="fa-solid fa-star"></i> {rating}
@@ -98,8 +97,7 @@ const QuickAction: React.FC<{
 }
 
 const TeacherHome: React.FC = () => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
   const [courses, setCourses] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
 
@@ -133,86 +131,7 @@ const TeacherHome: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      {/* Top nav */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200 shadow-sm">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link to="/" className="flex items-center gap-3">
-                <img
-                  src={LogoImg}
-                  alt="StudyMate Logo"
-                  className="h-9 w-auto object-contain"
-                />
-                <span className="text-xl font-bold tracking-tight text-[#1976d2]">
-                  StudyMate
-                </span>
-              </Link>
-              
-              <div className="hidden md:flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-md">
-                <span>Dashboard</span>
-                <span>/</span>
-                <span className="text-slate-900">Lecturer</span>
-              </div>
-            </div>
-
-            <nav className="hidden md:flex items-center gap-6">
-              <NavItem to="/">Home</NavItem>
-              <NavItem to="/courses">Courses</NavItem>
-              <NavItem to="/community">Community</NavItem>
-              <NavItem to="/game">Game</NavItem>
-              <NavItem to="/chat">Chat</NavItem>
-              <NavItem>AI Tutor</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-              >
-                <i className="fa-solid fa-magnifying-glass text-sm"></i>
-              </button>
-              
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-1.5 text-xs font-bold text-[#1976d2] hover:bg-blue-50"
-              >
-                <i className="fa-solid fa-crown"></i>
-                Upgrade
-              </Link>
-
-              <div className="h-6 w-px bg-slate-200 mx-1"></div>
-
-              <div className="flex items-center gap-3">
-                <Link to="/profile" className="flex items-center gap-3 group">
-                  <div className="hidden md:flex flex-col items-end mr-2">
-                    <span className="text-sm font-bold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                      {user?.fullName || 'Teacher'}
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-medium capitalize bg-slate-100 px-1.5 py-0.5 rounded">
-                      {user?.role || 'Lecturer'}
-                    </span>
-                  </div>
-                  <div className="h-9 w-9 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer shadow-md group-hover:bg-[#1565c0] transition-all ring-2 ring-white ring-offset-1 ring-offset-slate-100">
-                    <span className="font-bold text-sm">
-                      {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'T'}
-                    </span>
-                  </div>
-                </Link>
-                <button
-                  onClick={async () => {
-                    await logout()
-                    navigate('/')
-                  }}
-                  className="text-xs font-semibold text-slate-500 hover:text-red-600 transition-colors ml-1"
-                >
-                  <i className="fa-solid fa-right-from-bracket text-lg"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Welcome Section */}
@@ -278,7 +197,7 @@ const TeacherHome: React.FC = () => {
                     key={course.id}
                     title={course.title} 
                     students={course.totalEnrollments || 0} 
-                    earnings={(course.price || 0).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} 
+                    sections={course.totalSections || 0}
                     rating={course.averageRating || 0} 
                     status={course.status === 'active' ? 'Published' : 'Draft'} 
                   />

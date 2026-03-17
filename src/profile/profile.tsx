@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
+import MainHeader from '../components/MainHeader'
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth()
@@ -24,29 +24,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-            
-            <nav className="hidden md:flex items-center gap-7">
-              <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">

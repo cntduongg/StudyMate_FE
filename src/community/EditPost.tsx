@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-import { NavItem } from '../home/StudentHome'
+import MainHeader from '../components/MainHeader'
 import { getPostById, updatePost } from '../services/blogService'
 
 const EditPost: React.FC = () => {
@@ -92,32 +91,7 @@ const EditPost: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2">
-              <img src={LogoImg} alt="StudyMate" className="h-8 w-auto" />
-              <span className="text-xl font-bold text-[#1976d2] tracking-tight">StudyMate</span>
-            </Link>
-            <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-              <NavItem to="/">Home</NavItem>
-              <NavItem to="/courses">Courses</NavItem>
-              <NavItem to="/community">Community</NavItem>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4">
-            {isAuthenticated ? (
-              <Link to="/profile" className="h-8 w-8 rounded-full bg-[#1976d2] text-white flex items-center justify-center font-bold text-xs">
-                {user?.fullName?.charAt(0).toUpperCase() || 'U'}
-              </Link>
-            ) : (
-              <Link to="/login" className="text-sm font-bold text-slate-700">Log In</Link>
-            )}
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-3xl px-4 py-10">
         <div className="mb-6">

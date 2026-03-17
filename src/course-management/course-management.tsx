@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import LogoImg from '../accesory/picture/StudyMate 1.png';
+import MainHeader from '../components/MainHeader';
 
 interface Course {
   id: number;
   title: string;
   description: string;
-  price: number;
   categoryName: string;
   teacherName: string;
   teacherAvatar: string | null;
@@ -24,7 +23,7 @@ interface Course {
 }
 
 const CourseManagement: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -84,37 +83,7 @@ const CourseManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate Admin
-              </span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/admin-dashboard" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/profile" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Profile
-              </Link>
-              <button
-                onClick={() => logout()}
-                className="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors border border-red-100"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}
@@ -182,7 +151,6 @@ const CourseManagement: React.FC = () => {
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Title</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Category</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Teacher</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Price</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Enrollments</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Quizzes</th>
                     <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
@@ -191,21 +159,21 @@ const CourseManagement: React.FC = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center">
+                      <td colSpan={7} className="py-12 text-center">
                         <i className="fa-solid fa-spinner fa-spin text-3xl text-[#1976d2] mb-2"></i>
                         <p className="text-slate-500">Loading courses...</p>
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center">
+                      <td colSpan={7} className="py-12 text-center">
                         <i className="fa-solid fa-exclamation-circle text-3xl text-red-500 mb-2"></i>
                         <p className="text-red-600">{error}</p>
                       </td>
                     </tr>
                   ) : courses.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center">
+                      <td colSpan={7} className="py-12 text-center">
                         <i className="fa-solid fa-book text-5xl text-slate-300 mb-4"></i>
                         <p className="text-slate-500">No courses found</p>
                       </td>
@@ -232,7 +200,6 @@ const CourseManagement: React.FC = () => {
                             )}
                             {course.teacherName}
                           </td>
-                          <td className="py-4 px-4 text-sm text-slate-600">{course.price === 0 ? 'Free' : `$${course.price}`}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">{course.totalEnrollments}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">{course.totalQuizzes}</td>
                           <td className="py-4 px-4 text-sm text-slate-600">{createdDate}</td>

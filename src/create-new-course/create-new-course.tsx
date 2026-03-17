@@ -1,19 +1,9 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useCourse } from '../contexts/CourseContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
-
-const NavItem: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <a
-      href="#"
-      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-    >
-      {children}
-    </a>
-  )
-}
+import type { CourseData } from '../contexts/CourseContext'
+import { courseService } from '../services/courseService'
+import MainHeader from '../components/MainHeader'
 
 const Step: React.FC<{
   number: number
@@ -46,10 +36,11 @@ const Step: React.FC<{
 }
 
 const CreateNewCourse: React.FC = () => {
-  const { user, logout } = useAuth()
-  const { courseData, updateCourseData } = useCourse()
+  const { courseData, updateCourseData, setCourseData, setEditMode, resetCourseData, mode, editingCourseId } = useCourse()
+  const [searchParams] = useSearchParams()
   const currentStep: number = 1
   const [categories, setCategories] = useState<any[]>([])
+  const [loadingCourse, setLoadingCourse] = useState(false)
 
   React.useEffect(() => {
     // Fetch categories from API
@@ -69,75 +60,81 @@ const CreateNewCourse: React.FC = () => {
     fetchCategories()
   }, [])
 
+  React.useEffect(() => {
+    const modeParam = searchParams.get('mode')
+    const courseIdParam = searchParams.get('courseId')
+
+    if (modeParam === 'edit' && courseIdParam) {
+      const courseId = Number(courseIdParam)
+      if (!courseId || (mode === 'edit' && editingCourseId === courseId)) {
+        return
+      }
+
+      const loadCourseForEdit = async () => {
+        try {
+          setLoadingCourse(true)
+          const detail = await courseService.getTeacherCourseDetail(courseId)
+
+          const mappedCourseData: CourseData = {
+            title: detail.title || '',
+            description: detail.description || '',
+            categoryId: detail.categoryId || 0,
+            level: 'beginner',
+            duration: 0,
+            prerequisites: '',
+            sections: (detail.sections || []).map((section) => ({
+              title: section.title || '',
+              description: section.description || '',
+              orderIndex: section.orderIndex || 0,
+              materials: (section.materials || []).map((material) => ({
+                title: material.title || '',
+                description: material.description || '',
+                materialType: material.materialType || 'other',
+                fileUrl: material.fileUrl || '',
+                fileName: material.fileName || '',
+                fileSize: material.fileSize || 0,
+                orderIndex: material.orderIndex || 0
+              }))
+            })),
+            quizzes: (detail.quizzes || []).map((quiz) => ({
+              title: quiz.title || '',
+              questions: (quiz.questions || []).map((question) => ({
+                questionText: question.questionText || '',
+                questionType: question.questionType === 'true_false' ? 'true_false' : 'multiple_choice',
+                options: (question.options || []).map((option) => ({
+                  optionText: option.optionText || '',
+                  isCorrect: option.isCorrect
+                }))
+              }))
+            })),
+            flashcards: (detail.flashcards || []).map((flashcard) => ({
+              front: flashcard.front || '',
+              back: flashcard.back || ''
+            }))
+          }
+
+          setCourseData(mappedCourseData)
+          setEditMode(courseId)
+        } catch (error) {
+          console.error('Failed to load course for edit:', error)
+          alert(error instanceof Error ? error.message : 'Failed to load course data')
+        } finally {
+          setLoadingCourse(false)
+        }
+      }
+
+      loadCourseForEdit()
+      return
+    }
+
+    if (mode !== 'create') {
+      resetCourseData()
+    }
+  }, [searchParams, setCourseData, setEditMode, resetCourseData, mode, editingCourseId])
+
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
-      {/* Top nav - Simplified Version */}
-      <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <Link to="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
-              </Link>
-              <NavItem>Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              <div className="flex items-center gap-3">
-                  <Link to="/profile" className="flex items-center gap-3 group">
-                    <div className="hidden md:flex flex-col items-end mr-2">
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                        {user?.fullName || 'Teacher'}
-                      </span>
-                      <span className="text-[10px] text-slate-500 capitalize">
-                        {user?.role || 'Lecturer'}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer group-hover:bg-[#1565c0] transition-colors">
-                      <span className="font-semibold text-xs">
-                        {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'T'}
-                      </span>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <Link 
@@ -148,9 +145,15 @@ const CreateNewCourse: React.FC = () => {
         </Link>
 
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-extrabold text-slate-900">Create New Course</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900">{mode === 'edit' ? 'Edit Course' : 'Create New Course'}</h1>
           <p className="mt-2 text-slate-600">Follow the steps to create your course</p>
         </div>
+
+        {loadingCourse && (
+          <div className="mb-6 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 text-sm font-medium">
+            Loading course data for edit...
+          </div>
+        )}
 
         {/* Stepper */}
         <div className="mb-12 relative">
@@ -219,19 +222,6 @@ const CreateNewCourse: React.FC = () => {
                   </>
                 )}
               </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-sm font-bold text-slate-700">
-                Price (VND)
-              </label>
-              <input
-                type="number"
-                placeholder="0 for free"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:border-[#1976d2] focus:ring-1 focus:ring-[#1976d2] outline-none transition-all"
-                value={courseData.price === 0 ? '' : courseData.price}
-                onChange={(e) => updateCourseData({ price: e.target.value === '' ? 0 : Number(e.target.value) })}
-              />
             </div>
 
             <div className="pt-4 flex justify-end">

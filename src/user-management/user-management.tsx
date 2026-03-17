@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import LogoImg from '../accesory/picture/StudyMate 1.png'
+import MainHeader from '../components/MainHeader'
 
 interface User {
   id: number
@@ -13,7 +13,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   
   // Fetch users from API
   const [users, setUsers] = useState<User[]>([])
@@ -106,38 +106,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate Admin
-              </span>
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              <Link to="/admin-dashboard" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Dashboard
-              </Link>
-              <Link to="/profile" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Profile
-              </Link>
-              <button 
-                onClick={() => logout()}
-                className="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors border border-red-100"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Page Header */}

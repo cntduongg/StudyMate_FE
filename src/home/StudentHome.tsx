@@ -1,8 +1,8 @@
 import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { Link } from 'react-router-dom'
 import LogoImg from '../accesory/picture/StudyMate 1.png'
 import BanerImg from '../accesory/picture/Students learning together.png'
+import MainHeader from '../components/MainHeader'
 
 export const NavItem: React.FC<{ children: React.ReactNode; to?: string }> = ({ children, to = '#' }) => {
   return (
@@ -41,96 +41,9 @@ const FeatureCard: React.FC<{
 }
 
 const StudentHome: React.FC = () => {
-  const { isAuthenticated, logout, user } = useAuth()
-  const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-white">
-      {/* Top nav */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <NavItem to="/">Home</NavItem>
-              <NavItem to="/courses">Courses</NavItem>
-              <NavItem to="/community">Community</NavItem>
-              <NavItem to="/game">Game</NavItem>
-              <NavItem to="/chat">Chat</NavItem>
-              <NavItem>AI Tutor</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              {isAuthenticated ? (
-                <div className="flex items-center gap-3">
-                  <Link to="/profile" className="flex items-center gap-3 group">
-                    <div className="hidden md:flex flex-col items-end mr-2">
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                        {user?.fullName || 'User'}
-                      </span>
-                      <span className="text-[10px] text-slate-500 capitalize">
-                        {user?.role || 'Student'}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer group-hover:bg-[#1565c0] transition-colors">
-                      <span className="font-semibold text-xs">
-                        {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <i className="fa-solid fa-user"></i>}
-                      </span>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={async () => {
-                      await logout()
-                      navigate('/')
-                    }}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="text-sm font-semibold text-slate-700 hover:text-slate-900"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="rounded-md bg-[#1976d2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#145ca5] transition-colors"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       {/* Hero */}
       <main>

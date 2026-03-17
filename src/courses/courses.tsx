@@ -1,14 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import LogoImg from '../accesory/picture/StudyMate 1.png';
+import MainHeader from '../components/MainHeader';
 
 interface Course {
   id: number;
   title: string;
   description: string;
-  price: number;
   categoryName: string;
   teacherName: string;
   teacherAvatar: string | null;
@@ -24,28 +21,10 @@ interface Course {
   totalEnrollments: number;
 }
 
-
-const NavItem: React.FC<{ children: React.ReactNode; to?: string }> = ({ children, to }) => {
-  if (to) {
-    return (
-      <Link
-        to={to}
-        className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-      >
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <span className="text-sm text-slate-600 hover:text-slate-900 transition-colors cursor-default">{children}</span>
-  );
-};
-
 const Courses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { isAuthenticated, logout, user } = useAuth();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -69,88 +48,7 @@ const Courses: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top nav */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src={LogoImg}
-                alt="StudyMate Logo"
-                className="h-10 w-auto object-contain"
-              />
-              <span className="text-xl font-semibold tracking-tight text-[#1976d2]">
-                StudyMate
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7">
-              <NavItem to="/">Home</NavItem>
-              <NavItem to="/courses">Courses</NavItem>
-              <NavItem>AI Tutor</NavItem>
-              <NavItem>Game</NavItem>
-              <NavItem>Community</NavItem>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#e3f2fd] text-[#1976d2] border border-[#bbdefb]"
-                aria-label="Search"
-              >
-                <span className="text-sm">⌕</span>
-              </button>
-              <Link
-                to="/membership"
-                className="hidden sm:inline-flex items-center gap-2 rounded-md border border-[#bbdefb] bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <span className="text-sm">♛</span>
-                Upgrade
-              </Link>
-              {isAuthenticated ? (
-                <div className="flex items-center gap-3">
-                  <Link to="/profile" className="flex items-center gap-3 group">
-                    <div className="hidden md:flex flex-col items-end mr-2">
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#1976d2] transition-colors">
-                        {user?.fullName || 'User'}
-                      </span>
-                      <span className="text-[10px] text-slate-500 capitalize">
-                        {user?.role || 'Student'}
-                      </span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-[#1976d2] flex items-center justify-center text-white cursor-pointer group-hover:bg-[#1565c0] transition-colors">
-                      <span className="font-semibold text-xs">
-                        {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <i className="fa-solid fa-user"></i>}
-                      </span>
-                    </div>
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="text-xs font-medium text-slate-500 hover:text-red-600 transition-colors ml-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="text-sm font-semibold text-slate-700 hover:text-slate-900"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="rounded-md bg-[#1976d2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-[#145ca5] transition-colors"
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="text-3xl font-bold text-slate-900 mb-8">All Courses</h1>
@@ -195,7 +93,6 @@ const Courses: React.FC = () => {
                   <span className="font-medium text-slate-700">{course.teacherName}</span>
                 </div>
                 <div className="flex items-center gap-4 mt-auto">
-                  <span className="text-[#1976d2] font-bold text-lg">{course.price === 0 ? 'Free' : `$${course.price}`}</span>
                   <span className="text-xs text-slate-500">{course.totalEnrollments} enrolled</span>
                   <span className="ml-auto flex items-center gap-1 text-xs text-yellow-500">
                     <i className="fa-solid fa-star"></i>
