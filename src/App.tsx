@@ -33,6 +33,7 @@ import PostDetail from './community/PostDetail'
 import CreatePost from './community/CreatePost'
 import EditPost from './community/EditPost'
 import ChatPage from './chat/ChatPage'
+import FeedbackPage from './feedback/FeedbackPage'
 
 // Layout component to provide course context
 import { Outlet } from 'react-router-dom'
@@ -78,6 +79,7 @@ const App: React.FC = () => {
           <Route path="/community/edit/:postId" element={<EditPost />} />
           <Route path="/community/:postId" element={<PostDetail />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
           
           {/* Payment Routes */}
           <Route path="/payment" element={<Payment />} />

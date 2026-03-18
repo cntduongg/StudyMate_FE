@@ -29,7 +29,7 @@ const MainHeader: React.FC = () => {
               <HeaderNavItem to="/community">Community</HeaderNavItem>
               <HeaderNavItem to="/game">Game</HeaderNavItem>
               <HeaderNavItem to="/chat">Chat</HeaderNavItem>
-              <HeaderNavItem>AI Tutor</HeaderNavItem>
+              <HeaderNavItem to="/feedback">Feedback</HeaderNavItem>
             </nav>
           </div>
 
