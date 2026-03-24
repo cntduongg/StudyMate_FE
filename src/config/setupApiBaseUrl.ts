@@ -1,8 +1,17 @@
 const LOCAL_API_ORIGIN = 'https://localhost:7259'
+const PROD_API_ORIGIN = 'https://api.fptstudymate.id.vn'
+
+const getDefaultApiOrigin = (): string => {
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return PROD_API_ORIGIN
+  }
+
+  return LOCAL_API_ORIGIN
+}
 
 const normalizeBaseUrl = (value?: string): string => {
   const trimmed = value?.trim()
-  if (!trimmed) return LOCAL_API_ORIGIN
+  if (!trimmed) return getDefaultApiOrigin()
   return trimmed.replace(/\/+$/, '')
 }
 
