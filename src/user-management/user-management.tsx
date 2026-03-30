@@ -13,7 +13,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   
   // Fetch users from API
   const [users, setUsers] = useState<User[]>([])
@@ -65,6 +65,35 @@ const UserManagement: React.FC = () => {
   const handleDeleteUser = (userId: number) => {
     if (confirm('Are you sure you want to delete this user?')) {
       setUsers(users.filter(u => u.id !== userId))
+    }
+  }
+
+  const handleUpgradeToTeacher = async (userId: number) => {
+    if (!confirm('Are you sure you want to upgrade this student to a teacher?')) return
+
+    try {
+      const response = await fetch('https://localhost:7259/api/Auth/upgrade-to-teacher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ studentUserId: userId })
+      })
+
+      if (response.ok) {
+        alert('User upgraded to teacher successfully')
+        // Update local state
+        setUsers(users.map(u => 
+          u.id === userId ? { ...u, role: 'teacher' } : u
+        ))
+      } else {
+        const errorData = await response.json()
+        alert(errorData.message || 'Failed to upgrade user')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Network error')
     }
   }
 
@@ -255,6 +284,15 @@ const UserManagement: React.FC = () => {
                               >
                                 <i className={`fa-solid ${status === 'Active' ? 'fa-ban' : 'fa-check'}`}></i>
                               </button>
+                              {userData.role.toLowerCase() === 'student' && (
+                                <button 
+                                  onClick={() => handleUpgradeToTeacher(userData.id)}
+                                  className="px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-semibold rounded-md hover:bg-purple-100 transition-colors border border-purple-200"
+                                  title="Verify to Teacher"
+                                >
+                                  <i className="fa-solid fa-user-graduate"></i>
+                                </button>
+                              )}
                               <button 
                                 className="px-3 py-1.5 bg-yellow-50 text-yellow-700 text-xs font-semibold rounded-md hover:bg-yellow-100 transition-colors border border-yellow-200"
                                 title="Edit User"

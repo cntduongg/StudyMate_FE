@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 interface AuthContextType {
   isAuthenticated: boolean
+  token: string | null
   user: any | null
   login: (token: string, userData?: any) => void
   logout: () => Promise<void>
@@ -24,6 +25,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<any | null>(null)
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const savedUser = localStorage.getItem('user')
     if (token) {
       setIsAuthenticated(true)
+      setToken(token)
     }
     if (savedUser) {
       try {
@@ -44,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = (token: string, userData?: any) => {
     localStorage.setItem('token', token)
     setIsAuthenticated(true)
+    setToken(token)
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData))
       setUser(userData)
@@ -68,12 +72,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       setIsAuthenticated(false)
+      setToken(null)
       setUser(null)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

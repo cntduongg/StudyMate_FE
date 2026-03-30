@@ -175,22 +175,6 @@ const Login: React.FC = () => {
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
-
-          <div className="mt-4 flex items-center">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="mx-3 text-[10px] text-gray-400">
-              OR CONTINUE WITH
-            </span>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
-
-          <button
-            type="button"
-            className="mt-3 flex w-full items-center justify-center space-x-2 rounded-md border border-gray-300 bg-white py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <span className="text-[#ea4335] text-base">G</span>
-            <span>Continue with Google</span>
-          </button>
         </form>
 
         <p className="mt-5 text-center text-[11px] text-gray-500">

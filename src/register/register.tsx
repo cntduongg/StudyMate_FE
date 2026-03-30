@@ -8,7 +8,6 @@ const Register: React.FC = () => {
     fullName: '',
     email: '',
     password: '',
-    role: 'student',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -165,25 +164,7 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-gray-700">
-              Role
-            </label>
-            <div className="flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm focus-within:border-[#1976d2] focus-within:ring-1 focus-within:ring-[#1976d2]">
-              <span className="mr-2 text-gray-400">
-                <i className="fa-solid fa-id-badge" />
-              </span>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full border-none outline-none text-gray-800 bg-transparent text-sm"
-              >
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-              </select>
-            </div>
-          </div>
+
 
           <button
             type="submit"
@@ -191,22 +172,6 @@ const Register: React.FC = () => {
             className="mt-4 w-full rounded-md bg-[#1976d2] py-2 text-sm font-medium text-white shadow hover:bg-[#145ca5] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-
-          <div className="mt-4 flex items-center">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="mx-3 text-[10px] text-gray-400">
-              OR CONTINUE WITH
-            </span>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
-
-          <button
-            type="button"
-            className="mt-3 flex w-full items-center justify-center space-x-2 rounded-md border border-gray-300 bg-white py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <span className="text-[#ea4335] text-base">G</span>
-            <span>Continue with Google</span>
           </button>
         </form>
 
